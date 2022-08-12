@@ -19,8 +19,9 @@ import {Day, stringToDay} from "../appointments/Day";
 import {stringToTime} from "../appointments/Time";
 import {addAppointment, deleteAppointment} from "../appointments/appointmentManager";
 import {DayNumbers} from "luxon";
+import {readFileSync} from "fs";
+import {DEFAULT_SETTINGS} from "../Bot";
 
-let defaultMention : string = "";
 
 export const Termin: Command =
     {
@@ -117,18 +118,18 @@ export const Termin: Command =
             let repeat = options.getBoolean("repeat");
             if (date != null && start != null) {
                 try {
-                    let a : Appointment = new Appointment(
-                        mention != null ? mention.toString():defaultMention,
-                        stringToDay(date),
-                        stringToTime(start),
-                        end != null ? stringToTime(end):undefined,
-                        description != null ? description:undefined,
-                        repeat != null ? repeat:undefined
-                    );
-                    addAppointment(a);
                     if (interaction.channel != null) {
-                        await printAppointment((mention != undefined ? mention.toString():defaultMention),
-                        a, interaction.channel);
+                        let a: Appointment = new Appointment(
+                            mention != null ? mention.toString() : DEFAULT_SETTINGS.defaultMeetMention,
+                            stringToDay(date),
+                            stringToTime(start),
+                            end != null ? stringToTime(end) : undefined,
+                            description != null ? description : undefined,
+                            repeat != null ? repeat : undefined,
+                            interaction.channel.id
+                        );
+
+                        await addAppointment(a, interaction.channel);
                     }
                 } catch (e) {
                     console.log(e)
@@ -139,12 +140,12 @@ export const Termin: Command =
             let date = options.getString("date")
             if (interaction.channel != null) {
                 let day = date != null ? stringToDay(date):new Day(-1,-1,-1);
-                await deleteMeet(day, interaction.channel)
-                deleteAppointment(day);
+                await deleteAppointment(day, interaction.channel);
             }
         } else if (options.getSubcommand() === "configure") {
             let mention = options.getRole("mention");
-            defaultMention = mention != undefined ? mention.toString():"";
+            DEFAULT_SETTINGS.defaultMeetMention = mention != undefined ? mention.toString():DEFAULT_SETTINGS.defaultMeetMention;
+            DEFAULT_SETTINGS.save();
         }
         if (!keepMessage) {
             await interaction.deleteReply();
@@ -152,53 +153,4 @@ export const Termin: Command =
     }
 };
 
-async function printAppointment(mention:string, a:Appointment, c:TextBasedChannel) {
-    a.getEmbed()
-    c.send({content:a.toString(), /*embeds:[a.getEmbed()],*/ components:[
-            {
-                type: 1,
-                components: [
-                    {
-                        type: 2,
-                        label: 'Ich bin da',
-                        style: ButtonStyle.Success,
-                        custom_id: 'there'
-                    },
-                    {
-                        type: 2,
-                        label: 'Ich bin NICHT da',
-                        style: ButtonStyle.Danger,
-                        custom_id: 'notThere'
-                    },
-                    {
-                        type: 2,
-                        label: 'Ich bin ONLINE da',
-                        style: ButtonStyle.Primary,
-                        custom_id: 'discord'
-                    }
-                ]
-            }
-        ]});
-}
 
-async function deleteMeet(date:Day, channel:TextBasedChannel) {
-    channel.messages.fetch({ limit: 100 }).then(messages => {
-        //Iterate through the messages here with the variable "messages".
-        messages.forEach(message => {
-                let lines = message.content.split("\n");
-                let dateLine = "";
-                if (lines.length >= 1 && lines[0].at(0) != '<') {
-                    dateLine = lines[0];
-                } else if (lines.length >= 2) {
-                    dateLine = lines[1]
-                }
-                let messageDate : string = dateLine.substring(0, 6);
-                const dateRegEx = new RegExp("\\d\\d\\.\\d\\d\\.")
-                if (messageDate.match(dateRegEx) && messageDate === date.toString()) {
-                    message.delete();
-                }
-            }
-
-        )
-    })
-}

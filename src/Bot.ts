@@ -3,9 +3,11 @@ import ready from "./listeners/ready";
 import interactionCreate from "./listeners/interactionCreate";
 import reactionAdd from "./listeners/reactionAdd";
 import {readFileSync} from "fs";
-import {readAppointments} from "./appointments/appointmentManager";
+import {readAppointments, manageAppointments} from "./appointments/appointmentManager";
+import Settings from "./Settings";
 
 console.log("Bot is starting...");
+export const DEFAULT_SETTINGS = new Settings("data/defaultSettings.json")
 
 const client = new Client({
     intents: [
@@ -22,6 +24,8 @@ const client = new Client({
     ]
 });
 
+
+
 ready(client);
 interactionCreate(client);
 reactionAdd(client);
@@ -31,4 +35,6 @@ process.on('SIGINT', () => {
     client.destroy();
 });
 
-client.login(readFileSync("data/token.env").toString());
+client.login(readFileSync("data/token.env").toString()).then(() => {
+    manageAppointments(client).then(() => setInterval(function (){manageAppointments(client)}, 86400000))
+});

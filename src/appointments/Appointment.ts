@@ -1,6 +1,6 @@
 import {Day} from "./Day";
 import {Time} from "./Time"
-import {Embed, EmbedBuilder} from "discord.js";
+import {Embed, EmbedBuilder, Snowflake, TextBasedChannel} from "discord.js";
 
 export class Appointment {
 
@@ -13,18 +13,20 @@ export class Appointment {
     there : string[];
     notThere : string[]
     online : string[]
+    channel : string;
 
     constructor(mention:string, date:Day, start: Time, end? : Time,
-                description? : string, repeat? : boolean) {
+                description? : string, repeat? : boolean, channel?:string) {
         this.mention = mention
         this.date = date;
         this.start = start;
         this.end = end;
         this.description = description == undefined ? "":description;
         this.repeat = repeat != undefined ? repeat:false;
-        this.there = ["dss"];
+        this.there = [];
         this.notThere = []
         this.online = []
+        this.channel = channel != undefined? channel:"";
     }
 
     toString() : string {
@@ -38,19 +40,7 @@ export class Appointment {
    getEmbed() : EmbedBuilder {
        let emb = new EmbedBuilder()
            .setColor(0xe67e22);
-           /*.addFields(
-               { name: 'Sind da:', value: 'Hollo welt name\nFrancesco',  inline: true },
-               //{ name: '\u200B', value: '\u200B' },
-               { name: 'Sind nicht da:', value: 'Hollo welt name\nVincent', inline: true },
-               { name: 'Sind online da:', value: 'Hollo welt name\nLasse', inline: true },
-           )*/
 
-       /*.addFields(
-           ,
-           ,
-
-       );
-       */
        if (this.there.length > 0) {
            emb.addFields({ name: 'Sind da:', value: this.there.join("\n"),  inline: true })
        }
@@ -109,7 +99,8 @@ export function jsonToAppointment(json:string) : Appointment {
         new Time(obj.start.hour, obj.start.minute),
         obj.end != undefined ? new Time(obj.end.hour, obj.end.minute):undefined,
         obj.description,
-        obj.repeat
+        obj.repeat,
+        obj.channel
     );
     for (let s of obj.there) {
         a.isThere(s.toString())

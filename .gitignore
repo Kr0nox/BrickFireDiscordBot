@@ -1,2 +1,4 @@
 node_modules/
 data/token.env
+data/appointments.json
+.idea/
