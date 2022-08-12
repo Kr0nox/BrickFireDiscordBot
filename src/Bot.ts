@@ -36,5 +36,5 @@ process.on('SIGINT', () => {
 });
 
 client.login(readFileSync("data/token.env").toString()).then(() => {
-    manageAppointments(client).then(() => setInterval(function (){manageAppointments(client)}, 86400000))
+    manageAppointments(client).then(() => setInterval(function (){manageAppointments(client)}, 360000))
 });
