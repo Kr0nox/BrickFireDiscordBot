@@ -31,7 +31,7 @@ export class Appointment {
 
     toString() : string {
         return (this.mention != ""? this.mention+ "\n":"")
-            + this.date.toString()
+            + this.date.weekDayString() + " " + this.date.toString()
             + (this.end == undefined ? " um ":" von ") + this.start.toString()
             + (this.end == undefined ? "":" bis " + this.end.toString())
             + (this.description != "" ? "\n"+this.description:"");

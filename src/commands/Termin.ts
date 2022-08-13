@@ -17,7 +17,7 @@ import {Command} from "../Command";
 import {Appointment} from "../appointments/Appointment";
 import {Day, stringToDay} from "../appointments/Day";
 import {stringToTime} from "../appointments/Time";
-import {addAppointment, deleteAppointment} from "../appointments/appointmentManager";
+import {addAppointment, deleteAppointment, editAppointment} from "../appointments/appointmentManager";
 import {DayNumbers} from "luxon";
 import {readFileSync} from "fs";
 import {DEFAULT_SETTINGS} from "../Bot";
@@ -96,12 +96,50 @@ export const Termin: Command =
                     required: true
                 }
             ]
-        }/*,
+        },
         {
-            type: ApplicationCommandOptionTypes.SUB_COMMAND,
+            type: ApplicationCommandOptionType.Subcommand,
             name: "edit",
-            description: "Bearbeite einen Termin"
-        }*/
+            description: "Bearbeite einen Termin",
+            options:[
+                {
+                    type: ApplicationCommandOptionType.String,
+                    name: "date",
+                    description: "Datum des Termins der bearbeitet werden soll",
+                    required: true
+                },
+                {
+                    type: ApplicationCommandOptionType.String,
+                    name: "start",
+                    description: "Neue Start Zeit des Termins",
+                    required: false
+                },
+                {
+                    type: ApplicationCommandOptionType.String,
+                    name: "end",
+                    description: "Neue End Zeit des Termins",
+                    required: false
+                },
+                {
+                    type: ApplicationCommandOptionType.String,
+                    name: "description",
+                    description: "Neue Zusätzlich Infos",
+                    required: false
+                },
+                {
+                    type: ApplicationCommandOptionType.Boolean,
+                    name: "repeat",
+                    description: "Wiederholt den Termin jede Woche",
+                    required: false
+                },
+                {
+                    type: ApplicationCommandOptionType.Boolean,
+                    name: "remove_reactions",
+                    description: "Entfernt zu und absagen",
+                    required: false
+                }
+            ]
+        }
     ],
     run: async (client: Client, interaction: CommandInteraction) => {
         if (!interaction.isChatInputCommand()) {
@@ -139,8 +177,27 @@ export const Termin: Command =
         } else if (options.getSubcommand() === "delete") {
             let date = options.getString("date")
             if (interaction.channel != null) {
-                let day = date != null ? stringToDay(date):new Day(-1,-1,-1);
+                let day = date != null ? stringToDay(date) : new Day(-1, -1, -1);
                 await deleteAppointment(day, interaction.channel);
+            }
+        } else if (options.getSubcommand() == "edit") {
+            let date = options.getString("date")
+            let newStart = options.getString("start")
+            let newEnd = options.getString("end")
+            let newdesc = options.getString("description")
+            let newdRepeat = options.getBoolean("repeat")
+            if (interaction.channel != null) {
+                try {
+                    await editAppointment(interaction.channel,
+                        date != null ? stringToDay(date) : new Day(-1, -1, -1),
+                        false,
+                        newStart != null ? stringToTime(newStart) : undefined,
+                        newEnd != null ? stringToTime(newEnd): undefined,
+                        newdesc != null ? newdesc:undefined,
+                        newdRepeat != null ? newdRepeat:undefined);
+                } catch (e) {
+                    console.log(e)
+                }
             }
         } else if (options.getSubcommand() === "configure") {
             let mention = options.getRole("mention");

@@ -35,6 +35,12 @@ export class Day {
         const nd = new Date(d.getTime()+ 604800000)
         return new Day(nd.getDate(), nd.getMonth() + 1, nd.getFullYear());
     }
+
+
+    weekDayString() : string {
+        return ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
+            [new Date(this.year, this.month-1, this.day).getDay()];
+    }
 }
 
 export function stringToDay(s : string) : Day {

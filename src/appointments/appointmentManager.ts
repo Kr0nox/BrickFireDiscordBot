@@ -4,6 +4,7 @@ import {Day} from "./Day";
 import {ButtonComponent, ButtonInteraction, ButtonStyle, Client, Message, TextBasedChannel} from "discord.js";
 import {Time} from "./Time";
 import NullAppointment from "./NullAppointment";
+import {start} from "repl";
 
 let appointments : Appointment[] = [];
 const path = "data/appointments.json";
@@ -77,10 +78,12 @@ export async function addAppointment(a:Appointment, c:TextBasedChannel) {
 }
 
 export async function deleteAppointment(date:Day, channel:TextBasedChannel) {
-    findMessages(channel, date).then(messages => messages.forEach(function (m) {
+    await findMessages(channel, date).then(messages => {
+        messages.forEach(function (m) {
             m.delete();
+            });
         }
-    ))
+    );
 
     let newAppointments : Appointment[] = []
     while (appointments.length > 0) {
@@ -96,6 +99,43 @@ export async function deleteAppointment(date:Day, channel:TextBasedChannel) {
     saveAppointments()
 }
 
+export async function editAppointment(channel:TextBasedChannel, date:Day, removeReactions: boolean, newStart?:Time, newEnd?:Time,
+                                      newDescription?:string, newRepeat?: boolean) {
+    let count = 0;
+    let appointment : Appointment;
+    for (let a of appointments) {
+        if (a.date.toString() == date.toString()) {
+            count = count + 1;
+            appointment = a;
+        }
+    }
+    if (count != 1) {
+        return;
+    }
+
+    await findMessages(channel, date).then(messages => {
+        if (messages.length == 1) {
+            if (newStart != undefined) {
+                appointment.start = newStart;
+            }
+            if (newEnd != undefined) {
+                appointment.end = newEnd;
+            }
+            if (newDescription != undefined) {
+                appointment.description = newDescription;
+            }
+            if (newRepeat != undefined) {
+                appointment.repeat = newRepeat;
+            }
+            messages[0].edit({content: appointment.toString()})
+            if (removeReactions) {
+                messages[0].edit({embeds: []})
+            }
+        }
+    });
+
+    saveAppointments();
+}
 
 function saveAppointments() : void {
     writeFileSync(path, JSON.stringify(appointments))
@@ -130,9 +170,10 @@ export async function buttonClick(interaction : ButtonInteraction) : Promise<voi
 }
 
 async function findMessages(channel : TextBasedChannel, date? : Day, start? : Time) : Promise<Message[]> {
-    let arr : Message[] = []
-    channel.messages.fetch({ limit: 20 }).then(messages => {
+
+    return await channel.messages.fetch({ limit: 20 }).then(messages => {
         //Iterate through the messages here with the variable "messages".
+        let arr : Message[] = []
         messages.forEach(message => {
             if (date != undefined) {
                 let lines = message.content.split("\n");
@@ -142,18 +183,20 @@ async function findMessages(channel : TextBasedChannel, date? : Day, start? : Ti
                 } else if (lines.length >= 2) {
                     dateLine = lines[1]
                 }
-                let messageDate : string = dateLine.substring(0, 6);
-                const dateRegEx = new RegExp("\\d\\d\\.\\d\\d\\.")
-                if (messageDate.match(dateRegEx) && messageDate === date.toString()) {
-                    //message.delete();
-                    arr.push(message);
+                let dateLineSplits = dateLine.split(" ");
+                if (dateLineSplits.length >= 2) {
+                    let messageDate : string = dateLineSplits[1];
+                    if (messageDate === date.toString()) {
+                        //message.delete();
+                        arr.push(message);
+                    }
                 }
             } else {
                 arr.push(message);
             }
         });
+        return arr;
     });
-    return arr;
 }
 
 function findAppointmentByMessage(m : Message) : Appointment {
