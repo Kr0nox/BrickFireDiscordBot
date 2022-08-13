@@ -53,22 +53,18 @@ export class Appointment {
        return emb;
    }
 
-    toJson() : string {
-        return JSON.stringify(this);
-    }
-
-    isThere(name:string) {
+    addThere(name:string) {
         this.removeName(name)
         this.there.push(name)
     }
 
-    isNotThere(name:string) {
+    addNotThere(name:string) {
         this.removeName(name)
         this.notThere.push(name)
 
     }
 
-    isOnline(name:string)  {
+    addOnline(name:string)  {
         this.removeName(name)
         this.online.push(name)
     }
@@ -103,13 +99,13 @@ export function jsonToAppointment(json:string) : Appointment {
         obj.channel
     );
     for (let s of obj.there) {
-        a.isThere(s.toString())
+        a.addThere(s.toString())
     }
     for (let s of obj.notThere) {
-        a.isNotThere(s.toString())
+        a.addNotThere(s.toString())
     }
     for (let s of obj.online) {
-        a.isOnline(s.toString())
+        a.addOnline(s.toString())
     }
     return a;
 }

@@ -1,7 +1,9 @@
 import {Appointment, jsonToAppointment} from "./Appointment";
 import {readFileSync, writeFileSync} from "fs";
 import {Day} from "./Day";
-import {ButtonComponent, ButtonInteraction, ButtonStyle, Client, TextBasedChannel} from "discord.js";
+import {ButtonComponent, ButtonInteraction, ButtonStyle, Client, Message, TextBasedChannel} from "discord.js";
+import {Time} from "./Time";
+import NullAppointment from "./NullAppointment";
 
 let appointments : Appointment[] = [];
 const path = "data/appointments.json";
@@ -75,25 +77,10 @@ export async function addAppointment(a:Appointment, c:TextBasedChannel) {
 }
 
 export async function deleteAppointment(date:Day, channel:TextBasedChannel) {
-    channel.messages.fetch({ limit: 20 }).then(messages => {
-        //Iterate through the messages here with the variable "messages".
-        messages.forEach(message => {
-                let lines = message.content.split("\n");
-                let dateLine = "";
-                if (lines.length >= 1 && lines[0].at(0) != '<' && lines[0].at(0) != '@') {
-                    dateLine = lines[0];
-                } else if (lines.length >= 2) {
-                    dateLine = lines[1]
-                }
-                let messageDate : string = dateLine.substring(0, 6);
-                const dateRegEx = new RegExp("\\d\\d\\.\\d\\d\\.")
-                if (messageDate.match(dateRegEx) && messageDate === date.toString()) {
-                    message.delete();
-                }
-            }
-
-        )
-    })
+    findMessages(channel, date).then(messages => messages.forEach(function (m) {
+            m.delete();
+        }
+    ))
 
     let newAppointments : Appointment[] = []
     while (appointments.length > 0) {
@@ -122,28 +109,60 @@ export async function buttonClick(interaction : ButtonInteraction) : Promise<voi
     ]);
     const intID = interaction.customId
 
-    await interaction.reply({ephemeral:true, content:replyMap.get(intID)})
+    await interaction.reply({ephemeral: true, content: replyMap.get(intID)})
 
-    const messageContent = interaction.message.content;
-    for (let a of appointments) {
-        if (a.toString() === messageContent) {;
+    let a = findAppointmentByMessage(interaction.message)
 
-            if (interaction.member != null) {
-                // @ts-ignore
-                const name : string = interaction.member.nickname.split(" | ")[0];
-                if (intID == "there") {
-                    a.isThere(name)
-                } else if (intID == "notThere") {
-                    a.isNotThere(name)
-                } else if (intID == "discord") {
-                    a.isOnline(name)
-                }
-                await interaction.message.edit({embeds:[a.getEmbed()]})
-            }
-
-            break;
+    if (interaction.member != null) {
+        // @ts-ignore
+        const name: string = interaction.member.nickname.split(" | ")[0];
+        if (intID == "there") {
+            a.addThere(name)
+        } else if (intID == "notThere") {
+            a.addNotThere(name)
+        } else if (intID == "discord") {
+            a.addOnline(name)
         }
+        await interaction.message.edit({embeds: [a.getEmbed()]})
     }
 
     saveAppointments();
+}
+
+async function findMessages(channel : TextBasedChannel, date? : Day, start? : Time) : Promise<Message[]> {
+    let arr : Message[] = []
+    channel.messages.fetch({ limit: 20 }).then(messages => {
+        //Iterate through the messages here with the variable "messages".
+        messages.forEach(message => {
+            if (date != undefined) {
+                let lines = message.content.split("\n");
+                let dateLine = "";
+                if (lines.length >= 1 && lines[0].at(0) != '<' && lines[0].at(0) != '@') {
+                    dateLine = lines[0];
+                } else if (lines.length >= 2) {
+                    dateLine = lines[1]
+                }
+                let messageDate : string = dateLine.substring(0, 6);
+                const dateRegEx = new RegExp("\\d\\d\\.\\d\\d\\.")
+                if (messageDate.match(dateRegEx) && messageDate === date.toString()) {
+                    //message.delete();
+                    arr.push(message);
+                }
+            } else {
+                arr.push(message);
+            }
+        });
+    });
+    return arr;
+}
+
+function findAppointmentByMessage(m : Message) : Appointment {
+    const mContent = m.content;
+
+    for (let a of appointments) {
+        if (a.toString() === mContent) {
+            return a
+        }
+    }
+    return new NullAppointment()
 }

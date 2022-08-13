@@ -1,4 +1,4 @@
-import { Client } from "discord.js";
+import { Client, PresenceData } from "discord.js";
 import { Commands } from "../CommandCollection";
 
 export default (client: Client): void => {
