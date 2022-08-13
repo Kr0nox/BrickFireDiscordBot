@@ -37,21 +37,30 @@ export class Appointment {
             + (this.description != "" ? "\n"+this.description:"");
     }
 
+    private getVerb(arr: string[]) :string {
+        return arr.length == 1 ? 'Ist':'Sind';
+    }
+
    getEmbed() : EmbedBuilder {
        let emb = new EmbedBuilder()
            .setColor(0xe67e22);
 
        if (this.there.length > 0) {
-           emb.addFields({ name: 'Sind da:', value: this.there.join("\n"),  inline: true })
+           emb.addFields({ name: this.getVerb(this.there) + ' da:', value: this.there.join("\n"),
+               inline: true })
        }
        if (this.notThere.length > 0) {
-           emb.addFields({ name: 'Sind nicht da:', value: this.notThere.join("\n"), inline: true })
+           emb.addFields({ name: this.getVerb(this.there) + ' nicht da:', value: this.notThere.join("\n"),
+               inline: true })
        }
        if (this.online.length > 0) {
-           emb.addFields({ name: 'Sind online da:', value: this.online.join("\n"), inline: true })
+           emb.addFields({ name: this.getVerb(this.there) + ' online da:', value: this.online.join("\n"),
+               inline: true })
        }
        return emb;
    }
+
+
 
     addThere(name:string) {
         this.removeName(name)
