@@ -1,6 +1,6 @@
 import { Client, PresenceData } from "discord.js";
 import { Commands } from "../CommandCollection";
-import print from "../Bot";
+import printToConsole from "../Bot";
 
 export default (client: Client): void => {
     client.on("ready", async () => {
@@ -10,6 +10,6 @@ export default (client: Client): void => {
 
         await client.application.commands.set(Commands);
 
-        print(`${client.user.username} is online`);
+        printToConsole(`${client.user.username} is online`);
     });
 };
