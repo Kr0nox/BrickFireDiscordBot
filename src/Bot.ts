@@ -6,7 +6,7 @@ import {readFileSync} from "fs";
 import {readAppointments, manageAppointments} from "./appointments/appointmentManager";
 import Settings from "./Settings";
 
-console.log("Bot is starting...");
+print("Bot is starting...");
 export const DEFAULT_SETTINGS = new Settings("data/defaultSettings.json")
 
 const client = new Client({
@@ -25,7 +25,6 @@ const client = new Client({
 });
 
 
-
 ready(client);
 interactionCreate(client);
 reactionAdd(client);
@@ -38,3 +37,7 @@ process.on('SIGINT', () => {
 client.login(readFileSync("data/token.env").toString()).then(() => {
     manageAppointments(client).then(() => setInterval(function (){manageAppointments(client)}, 360000))
 });
+
+export default function print(s: any) : void {
+    console.log(new Date().toLocaleString() + " > "+ s)
+}

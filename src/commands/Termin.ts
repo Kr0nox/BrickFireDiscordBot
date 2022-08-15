@@ -20,7 +20,7 @@ import {stringToTime} from "../appointments/Time";
 import {addAppointment, deleteAppointment, editAppointment} from "../appointments/appointmentManager";
 import {DayNumbers} from "luxon";
 import {readFileSync} from "fs";
-import {DEFAULT_SETTINGS} from "../Bot";
+import print, {DEFAULT_SETTINGS} from "../Bot";
 
 
 export const Termin: Command =
@@ -170,7 +170,7 @@ export const Termin: Command =
                         await addAppointment(a, interaction.channel);
                     }
                 } catch (e) {
-                    console.log(e)
+                    print(e)
                 }
 
             }
@@ -196,7 +196,7 @@ export const Termin: Command =
                         newdesc != null ? newdesc:undefined,
                         newdRepeat != null ? newdRepeat:undefined);
                 } catch (e) {
-                    console.log(e)
+                    print(e)
                 }
             }
         } else if (options.getSubcommand() === "configure") {

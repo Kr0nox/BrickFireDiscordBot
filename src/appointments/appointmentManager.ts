@@ -1,10 +1,14 @@
 import {Appointment, jsonToAppointment} from "./Appointment";
 import {readFileSync, writeFileSync} from "fs";
 import {Day} from "./Day";
-import {ButtonComponent, ButtonInteraction, ButtonStyle, Client, Message, TextBasedChannel} from "discord.js";
+import {
+    Client,
+    APIInteractionGuildMember, GuildMember,
+    ButtonInteraction, ButtonStyle,
+    Message, TextBasedChannel
+} from "discord.js";
 import {Time} from "./Time";
 import NullAppointment from "./NullAppointment";
-import {start} from "repl";
 
 let appointments : Appointment[] = [];
 const path = "data/appointments.json";
