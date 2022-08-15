@@ -24,8 +24,10 @@ export function readAppointments() {
 export async function manageAppointments(client:Client) {
     let d = new Date();
     const day = new Day(d.getDate(), d.getMonth() + 1, d.getFullYear());
+    const time = new Time(d.getHours(), d.getMinutes())
     for (let a of appointments) {
-        if (day.isAfter(a.date)) {
+        if (day.compare(a.date) == 1 || (day.compare(a.date) == 0 &&
+            (a.end != null ? time.compare(a.end) == 1: time.compare(a.start) == 1))) {
             await client.channels.fetch(a.channel).then(() => {
 
 
@@ -159,7 +161,7 @@ export async function buttonClick(interaction : ButtonInteraction) : Promise<voi
 
     if (interaction.member != null) {
         // @ts-ignore
-        const name: string = interaction.member.nickname.split(" | ")[0];
+        const name: string = getName(interaction.member);
         if (intID == "there") {
             a.addThere(name)
         } else if (intID == "notThere") {
@@ -212,4 +214,9 @@ function findAppointmentByMessage(m : Message) : Appointment {
         }
     }
     return new NullAppointment()
+}
+
+function getName(user: GuildMember | APIInteractionGuildMember) : string {
+    // @ts-ignore
+    return user.nickname.split(" | ")[0];
 }
