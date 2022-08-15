@@ -32,12 +32,12 @@ export class Appointment {
     toString() : string {
         return (this.mention != ""? this.mention+ "\n":"")
             + this.date.weekDayString() + " " + this.date.toString()
-            + (this.end == undefined ? " um ":" von ") + this.start.toString()
-            + (this.end == undefined ? "":" bis " + this.end.toString())
+            + (this.end == undefined ? " um ":" von ") + this.start.toString() + " Uhr"
+            + (this.end == undefined ? "":" bis " + this.end.toString() + " Uhr")
             + (this.description != "" ? "\n"+this.description:"");
     }
 
-    private getVerb(arr: string[]) :string {
+    private static getVerb(arr: string[]) :string {
         return arr.length == 1 ? 'Ist':'Sind';
     }
 
@@ -46,15 +46,15 @@ export class Appointment {
            .setColor(0xe67e22);
 
        if (this.there.length > 0) {
-           emb.addFields({ name: this.getVerb(this.there) + ' da:', value: this.there.join("\n"),
+           emb.addFields({ name: Appointment.getVerb(this.there) + ' da:', value: this.there.join("\n"),
                inline: true })
        }
        if (this.notThere.length > 0) {
-           emb.addFields({ name: this.getVerb(this.there) + ' nicht da:', value: this.notThere.join("\n"),
+           emb.addFields({ name: Appointment.getVerb(this.there) + ' nicht da:', value: this.notThere.join("\n"),
                inline: true })
        }
        if (this.online.length > 0) {
-           emb.addFields({ name: this.getVerb(this.there) + ' online da:', value: this.online.join("\n"),
+           emb.addFields({ name: Appointment.getVerb(this.there) + ' online da:', value: this.online.join("\n"),
                inline: true })
        }
        return emb;
