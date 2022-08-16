@@ -17,23 +17,39 @@ export class Day {
         return (this.day < 10 ? "0":"") + this.day + "." + (this.month < 10 ? "0":"") + this.month + ".";
     }
 
-    isAfter(d:Day) : boolean {
+    /**
+     * 1 : this is after d
+     * 0: equal
+     * -1 : this is before d
+     * @param d
+     */
+    compare(d:Day) : number {
+        if (this.year == d.year && this.month == d.month && this.day == d.day) {
+            return 0;
+        }
         if (this.year > d.year) {
-            return true;
-        } else if (this.year == d.year) {
+            return 1;
+        }
+        if (this.year == d.year) {
             if (this.month > d.month) {
-                return true;
+                return 1;
             } else if (this.month == d.month) {
-                return this.day > d.day;
+                return this.day > d.day ? 1 : (this.day == d.day ? 0:-1);
             }
         }
-        return false;
+        return -1;
     }
 
     nextWeek() : Day {
         const d = new Date(this.year, this.month - 1, this.day)
         const nd = new Date(d.getTime()+ 604800000)
         return new Day(nd.getDate(), nd.getMonth() + 1, nd.getFullYear());
+    }
+
+
+    weekDayString() : string {
+        return ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
+            [new Date(this.year, this.month-1, this.day).getDay()];
     }
 }
 

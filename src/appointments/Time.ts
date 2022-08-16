@@ -13,6 +13,19 @@ export class Time {
         return (this.hour < 10 ? "0":"") + this.hour + ":" + (this.minute < 10 ? "0":"") + this.minute;
     }
 
+    compare(t:Time) {
+        if (t.hour == this.hour && t.minute == this.minute) {
+            return 0;
+        }
+        if (this.hour > t.hour) {
+            return 1;
+        }
+        if (this.hour == t.hour) {
+            return this.minute > t.minute ? 1:(this.minute == t.minute ? 0:-1);
+        }
+        return -1;
+    }
+
 }
 
 export function stringToTime(s : string) : Time {

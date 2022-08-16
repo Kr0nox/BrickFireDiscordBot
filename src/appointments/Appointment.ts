@@ -31,10 +31,14 @@ export class Appointment {
 
     toString() : string {
         return (this.mention != ""? this.mention+ "\n":"")
-            + this.date.toString()
-            + (this.end == undefined ? " um ":" von ") + this.start.toString()
-            + (this.end == undefined ? "":" bis " + this.end.toString())
+            + this.date.weekDayString() + " " + this.date.toString()
+            + (this.end == undefined ? " um ":" von ") + this.start.toString() + " Uhr"
+            + (this.end == undefined ? "":" bis " + this.end.toString() + " Uhr")
             + (this.description != "" ? "\n"+this.description:"");
+    }
+
+    private static getVerb(arr: string[]) :string {
+        return arr.length == 1 ? 'Ist':'Sind';
     }
 
    getEmbed() : EmbedBuilder {
@@ -42,33 +46,34 @@ export class Appointment {
            .setColor(0xe67e22);
 
        if (this.there.length > 0) {
-           emb.addFields({ name: 'Sind da:', value: this.there.join("\n"),  inline: true })
+           emb.addFields({ name: Appointment.getVerb(this.there) + ' da:', value: this.there.join("\n"),
+               inline: true })
        }
        if (this.notThere.length > 0) {
-           emb.addFields({ name: 'Sind nicht da:', value: this.notThere.join("\n"), inline: true })
+           emb.addFields({ name: Appointment.getVerb(this.there) + ' nicht da:', value: this.notThere.join("\n"),
+               inline: true })
        }
        if (this.online.length > 0) {
-           emb.addFields({ name: 'Sind online da:', value: this.online.join("\n"), inline: true })
+           emb.addFields({ name: Appointment.getVerb(this.there) + ' online da:', value: this.online.join("\n"),
+               inline: true })
        }
        return emb;
    }
 
-    toJson() : string {
-        return JSON.stringify(this);
-    }
 
-    isThere(name:string) {
+
+    addThere(name:string) {
         this.removeName(name)
         this.there.push(name)
     }
 
-    isNotThere(name:string) {
+    addNotThere(name:string) {
         this.removeName(name)
         this.notThere.push(name)
 
     }
 
-    isOnline(name:string)  {
+    addOnline(name:string)  {
         this.removeName(name)
         this.online.push(name)
     }
@@ -103,13 +108,13 @@ export function jsonToAppointment(json:string) : Appointment {
         obj.channel
     );
     for (let s of obj.there) {
-        a.isThere(s.toString())
+        a.addThere(s.toString())
     }
     for (let s of obj.notThere) {
-        a.isNotThere(s.toString())
+        a.addNotThere(s.toString())
     }
     for (let s of obj.online) {
-        a.isOnline(s.toString())
+        a.addOnline(s.toString())
     }
     return a;
 }

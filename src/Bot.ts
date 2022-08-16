@@ -5,8 +5,9 @@ import reactionAdd from "./listeners/reactionAdd";
 import {readFileSync} from "fs";
 import {readAppointments, manageAppointments} from "./appointments/appointmentManager";
 import Settings from "./Settings";
+import processEnd from "./listeners/processEnd";
 
-console.log("Bot is starting...");
+printToConsole("Bot is starting...");
 export const DEFAULT_SETTINGS = new Settings("data/defaultSettings.json")
 
 const client = new Client({
@@ -25,16 +26,17 @@ const client = new Client({
 });
 
 
-
 ready(client);
 interactionCreate(client);
 reactionAdd(client);
+processEnd(client)
 readAppointments();
 
-process.on('SIGINT', () => {
-    client.destroy();
-});
 
 client.login(readFileSync("data/token.env").toString()).then(() => {
     manageAppointments(client).then(() => setInterval(function (){manageAppointments(client)}, 360000))
 });
+
+export default function printToConsole(s: any) : void {
+    console.log(new Date().toLocaleString() + " > "+ s)
+}
