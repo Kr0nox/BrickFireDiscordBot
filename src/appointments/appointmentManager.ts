@@ -192,9 +192,9 @@ async function findMessages(channel : TextBasedChannel, date? : Day, start? : Ti
                 }
                 let dateLineSplits = dateLine.split(" ");
                 if (dateLineSplits.length >= 2) {
-                    let messageDate : string = dateLineSplits[1];
-                    if (messageDate === date.toString()) {
-                        if (start == undefined || (dateLineSplits.length >= 4 && dateLineSplits[3] == start.toString())) {
+                    let offset = new RegExp("\\d\\d\\.\\d\\d\\.").test(dateLineSplits[0]) ? 0:1;
+                    if (dateLineSplits[offset] === date.toString()) {
+                        if (start == undefined || (dateLineSplits.length >= 4 && dateLineSplits[2 + offset] == start.toString())) {
                             arr.push(message);
                         }
                     }
