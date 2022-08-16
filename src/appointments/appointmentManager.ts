@@ -34,7 +34,7 @@ export async function manageAppointments(client:Client) {
             let c = client.channels.cache.get(a.channel)
             if (c != undefined) {
                 let channel = c as TextBasedChannel
-                deleteAppointment(a.date, channel);
+                deleteAppointment(channel, a.date, a.start);
                 if (a.repeat) {
                     let repeat = new Appointment(
                         a.mention,
@@ -83,8 +83,8 @@ export async function addAppointment(a:Appointment, c:TextBasedChannel) {
         ]});
 }
 
-export async function deleteAppointment(date:Day, channel:TextBasedChannel) {
-    await findMessages(channel, date).then(messages => {
+export async function deleteAppointment(channel:TextBasedChannel, date:Day, start?:Time) {
+    await findMessages(channel, date, start).then(messages => {
         messages.forEach(function (m) {
             m.delete();
             });
@@ -105,12 +105,12 @@ export async function deleteAppointment(date:Day, channel:TextBasedChannel) {
     saveAppointments()
 }
 
-export async function editAppointment(channel:TextBasedChannel, date:Day, removeReactions: boolean, newStart?:Time, newEnd?:Time,
+export async function editAppointment(channel:TextBasedChannel, date:Day, removeReactions: boolean, oldStart? : Time, newStart?:Time, newEnd?:Time,
                                       newDescription?:string, newRepeat?: boolean) {
     let count = 0;
     let appointment : Appointment;
     for (let a of appointments) {
-        if (a.date.toString() == date.toString()) {
+        if (a.date.toString() == date.toString() && (oldStart == undefined || a.start.toString() == oldStart.toString())) {
             count = count + 1;
             appointment = a;
         }
@@ -119,7 +119,7 @@ export async function editAppointment(channel:TextBasedChannel, date:Day, remove
         return;
     }
 
-    await findMessages(channel, date).then(messages => {
+    await findMessages(channel, date, oldStart).then(messages => {
         if (messages.length == 1) {
             if (newStart != undefined) {
                 appointment.start = newStart;
@@ -133,7 +133,8 @@ export async function editAppointment(channel:TextBasedChannel, date:Day, remove
             if (newRepeat != undefined) {
                 appointment.repeat = newRepeat;
             }
-            messages[0].edit({content: appointment.toString()})
+            messages[0].edit({content: appointment.toString()});
+
             if (removeReactions) {
                 messages[0].edit({embeds: []})
             }
@@ -193,8 +194,9 @@ async function findMessages(channel : TextBasedChannel, date? : Day, start? : Ti
                 if (dateLineSplits.length >= 2) {
                     let messageDate : string = dateLineSplits[1];
                     if (messageDate === date.toString()) {
-                        //message.delete();
-                        arr.push(message);
+                        if (start == undefined || (dateLineSplits.length >= 4 && dateLineSplits[3] == start.toString())) {
+                            arr.push(message);
+                        }
                     }
                 }
             } else {

@@ -94,6 +94,12 @@ export const Termin: Command =
                     name: "date",
                     description: "Datum des Termins der gelöscht werden soll",
                     required: true
+                },
+                {
+                    type: ApplicationCommandOptionType.String,
+                    name: "start",
+                    description: "Optionale Start Zeit des zu löschenden Termins, falls es an dem Tag mehrere gibt",
+                    required: false
                 }
             ]
         },
@@ -110,25 +116,31 @@ export const Termin: Command =
                 },
                 {
                     type: ApplicationCommandOptionType.String,
-                    name: "start",
+                    name: "old_start",
+                    description: "Alte Start Zeit des Termins. Nutzen falls es mehrere Termine an dem Tag gibt",
+                    required: false
+                },
+                {
+                    type: ApplicationCommandOptionType.String,
+                    name: "new_start",
                     description: "Neue Start Zeit des Termins",
                     required: false
                 },
                 {
                     type: ApplicationCommandOptionType.String,
-                    name: "end",
+                    name: "new_end",
                     description: "Neue End Zeit des Termins",
                     required: false
                 },
                 {
                     type: ApplicationCommandOptionType.String,
-                    name: "description",
+                    name: "new_description",
                     description: "Neue Zusätzlich Infos",
                     required: false
                 },
                 {
                     type: ApplicationCommandOptionType.Boolean,
-                    name: "repeat",
+                    name: "new_repeat",
                     description: "Wiederholt den Termin jede Woche",
                     required: false
                 },
@@ -176,25 +188,34 @@ export const Termin: Command =
             }
         } else if (options.getSubcommand() === "delete") {
             let date = options.getString("date")
+            let start = options.getString("start")
             if (interaction.channel != null) {
-                let day = date != null ? stringToDay(date) : new Day(-1, -1, -1);
-                await deleteAppointment(day, interaction.channel);
+                try {
+                    let day = date != null ? stringToDay(date) : new Day(-1, -1, -1);
+                    let s = start != null ? stringToTime(start) : undefined;
+                    await deleteAppointment(interaction.channel, day, s);
+                } catch (e) {
+                    printToConsole(e)
+                }
             }
         } else if (options.getSubcommand() == "edit") {
             let date = options.getString("date")
-            let newStart = options.getString("start")
-            let newEnd = options.getString("end")
-            let newdesc = options.getString("description")
-            let newdRepeat = options.getBoolean("repeat")
+            let oldStart = options.getString("old_start");
+            let newStart = options.getString("new_start")
+            let newEnd = options.getString("new_end")
+            let newDescription = options.getString("new_description")
+            let newRepeat = options.getBoolean("new:repeat")
+            let removeReactions = options.getBoolean("remove_reactions")
             if (interaction.channel != null) {
                 try {
                     await editAppointment(interaction.channel,
                         date != null ? stringToDay(date) : new Day(-1, -1, -1),
-                        false,
+                        removeReactions != null ? removeReactions : false,
+                        oldStart != null ? stringToTime(oldStart) : undefined,
                         newStart != null ? stringToTime(newStart) : undefined,
                         newEnd != null ? stringToTime(newEnd): undefined,
-                        newdesc != null ? newdesc:undefined,
-                        newdRepeat != null ? newdRepeat:undefined);
+                        newDescription != null ? newDescription:undefined,
+                        newRepeat != null ? newRepeat:undefined);
                 } catch (e) {
                     printToConsole(e)
                 }
