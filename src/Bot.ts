@@ -38,5 +38,5 @@ client.login(readFileSync("data/token.env").toString()).then(() => {
 });
 
 export default function printToConsole(s: any) : void {
-    console.log(new Date().toLocaleString() + " > "+ s)
+    console.log(new Date().toLocaleString('de-AT', {timeZone: 'Europe/Berlin'}) + " > "+ s)
 }
