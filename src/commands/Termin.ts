@@ -155,12 +155,14 @@ export const Termin: Command =
             ]
         }
     ],
+
     run: async (client: Client, interaction: CommandInteraction) => {
         if (!interaction.isChatInputCommand()) {
             return;
         }
         let keepMessage : boolean = false;
         let options = interaction.options as CommandInteractionOptionResolver;
+
         if (options.getSubcommand() === "create") {
             let date = options.getString("date");
             let start = options.getString("start");
@@ -190,7 +192,10 @@ export const Termin: Command =
                 }
 
             }
-        } else if (options.getSubcommand() === "delete") {
+        }
+
+
+        else if (options.getSubcommand() === "delete") {
             let date = options.getString("date")
             let start = options.getString("start")
             if (interaction.channel != null) {
@@ -202,7 +207,10 @@ export const Termin: Command =
                     printToConsole(e)
                 }
             }
-        } else if (options.getSubcommand() == "edit") {
+        }
+
+
+        else if (options.getSubcommand() == "edit") {
             let date = options.getString("date")
             let oldStart = options.getString("old_start");
             let newStart = options.getString("new_start")
@@ -224,13 +232,18 @@ export const Termin: Command =
                     printToConsole(e)
                 }
             }
-        } else if (options.getSubcommand() === "configure") {
+        }
+
+
+        else if (options.getSubcommand() === "configure") {
             let mention = options.getRole("mention");
             let time = options.getInteger("private_mention_time")
             DEFAULT_SETTINGS.defaultMeetMention = mention != null ? mention.toString():DEFAULT_SETTINGS.defaultMeetMention;
             DEFAULT_SETTINGS.privateMentionTime = time != null ? time:DEFAULT_SETTINGS.privateMentionTime
             DEFAULT_SETTINGS.save();
         }
+
+
         if (!keepMessage) {
             await interaction.deleteReply();
         }

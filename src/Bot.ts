@@ -3,7 +3,7 @@ import ready from "./listeners/ready";
 import interactionCreate from "./listeners/interactionCreate";
 import reactionAdd from "./listeners/reactionAdd";
 import {readFileSync} from "fs";
-import {readAppointments, manageAppointments} from "./appointments/appointmentManager";
+import {readAppointments} from "./appointments/appointmentManager";
 import Settings from "./Settings";
 import processEnd from "./listeners/processEnd";
 

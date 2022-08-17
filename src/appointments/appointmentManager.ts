@@ -83,6 +83,7 @@ export async function manageAppointments(client:Client) {
             a.mentionedPrivately = true;
         }
     }
+    saveAppointments()
 }
 
 export async function addAppointment(a:Appointment, c:TextBasedChannel) {
