@@ -33,9 +33,7 @@ processEnd(client)
 readAppointments();
 
 
-client.login(readFileSync("data/token.env").toString()).then(() => {
-    manageAppointments(client).then(() => setInterval(function (){manageAppointments(client)}, 360000))
-});
+client.login(readFileSync("data/token.env").toString());
 
 export default function printToConsole(s: any) : void {
     console.log(new Date().toLocaleString('de-AT', {timeZone: 'Europe/Berlin'}) + " > "+ s)

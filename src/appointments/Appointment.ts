@@ -1,6 +1,6 @@
 import {Day} from "./Day";
 import {Time} from "./Time"
-import {Embed, EmbedBuilder, Snowflake, TextBasedChannel} from "discord.js";
+import {EmbedBuilder} from "discord.js";
 
 export class Appointment {
 
@@ -14,9 +14,11 @@ export class Appointment {
     notThere : string[]
     online : string[]
     channel : string;
+    doPrivateMention: boolean;
+    mentionedPrivately : boolean;
 
     constructor(mention:string, date:Day, start: Time, end? : Time,
-                description? : string, repeat? : boolean, channel?:string) {
+                description? : string, repeat? : boolean, channel?:string, mentionedPrivately?:boolean) {
         this.mention = mention
         this.date = date;
         this.start = start;
@@ -27,10 +29,12 @@ export class Appointment {
         this.notThere = []
         this.online = []
         this.channel = channel != undefined? channel:"";
+        this.mentionedPrivately = mentionedPrivately != undefined ? mentionedPrivately : true;
+        this.doPrivateMention = this.mentionedPrivately;
     }
 
-    toString() : string {
-        return (this.mention != ""? this.mention+ "\n":"")
+    toString(removeMention? : boolean) : string {
+        return (removeMention == undefined || !removeMention ? (this.mention != ""? this.mention+ "\n":""):"")
             + this.date.weekDayString() + " " + this.date.toString()
             + (this.end == undefined ? " um ":" von ") + this.start.toString() + " Uhr"
             + (this.end == undefined ? "":" bis " + this.end.toString() + " Uhr")
@@ -105,8 +109,10 @@ export function jsonToAppointment(json:string) : Appointment {
         obj.end != undefined ? new Time(obj.end.hour, obj.end.minute):undefined,
         obj.description,
         obj.repeat,
-        obj.channel
+        obj.channel,
+        obj.mentionedPrivately
     );
+    a.doPrivateMention = obj.doPrivateMention
     for (let s of obj.there) {
         a.addThere(s.toString())
     }

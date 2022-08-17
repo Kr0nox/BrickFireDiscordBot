@@ -1,25 +1,15 @@
 import {
     Client,
     CommandInteraction,
-    Message,
-    Role,
-    TextBasedChannel,
     ApplicationCommandOptionType,
     CommandInteractionOptionResolver,
-    ActionRow,
-    ActionRowBuilder,
-    ButtonBuilder,
     ButtonStyle,
-    AnyComponentBuilder,
-    MessageActionRowComponent, TextChannel,
 } from "discord.js";
 import {Command} from "../Command";
 import {Appointment} from "../appointments/Appointment";
 import {Day, stringToDay} from "../appointments/Day";
 import {stringToTime} from "../appointments/Time";
 import {addAppointment, deleteAppointment, editAppointment} from "../appointments/appointmentManager";
-import {DayNumbers} from "luxon";
-import {readFileSync} from "fs";
 import printToConsole, {DEFAULT_SETTINGS} from "../Bot";
 
 
@@ -68,6 +58,12 @@ export const Termin: Command =
                     name: "mention",
                     description: "Wird gepingt (überschreibt default mention)",
                     required: false
+                },
+                {
+                    type: ApplicationCommandOptionType.Boolean,
+                    name: "privat_erinnern",
+                    description: "@mention wird vor dem Termin nochmal privat gepingt, wenn sie nicht, reagiert haben",
+                    required: false
                 }
             ]
         },
@@ -80,7 +76,13 @@ export const Termin: Command =
                     type: ApplicationCommandOptionType.Role,
                     name: "mention",
                     description: "Default ping",
-                    required: true
+                    required: false
+                },
+                {
+                    type: ApplicationCommandOptionType.Integer,
+                    name: "private_mention_time",
+                    description: "Zeit in Stunden die eine private Nachricht vor einem Termin verschickt wird",
+                    required: false
                 }
             ]
         },
@@ -166,6 +168,7 @@ export const Termin: Command =
             let mention = options.getRole("mention");
             let description = options.getString("description");
             let repeat = options.getBoolean("repeat");
+            let mentionPrivately = options.getBoolean("privat_erinnern")
             if (date != null && start != null) {
                 try {
                     if (interaction.channel != null) {
@@ -176,7 +179,8 @@ export const Termin: Command =
                             end != null ? stringToTime(end) : undefined,
                             description != null ? description : undefined,
                             repeat != null ? repeat : undefined,
-                            interaction.channel.id
+                            interaction.channel.id,
+                            mentionPrivately != null ? !mentionPrivately:undefined
                         );
 
                         await addAppointment(a, interaction.channel);
@@ -222,7 +226,9 @@ export const Termin: Command =
             }
         } else if (options.getSubcommand() === "configure") {
             let mention = options.getRole("mention");
-            DEFAULT_SETTINGS.defaultMeetMention = mention != undefined ? mention.toString():DEFAULT_SETTINGS.defaultMeetMention;
+            let time = options.getInteger("private_mention_time")
+            DEFAULT_SETTINGS.defaultMeetMention = mention != null ? mention.toString():DEFAULT_SETTINGS.defaultMeetMention;
+            DEFAULT_SETTINGS.privateMentionTime = time != null ? time:DEFAULT_SETTINGS.privateMentionTime
             DEFAULT_SETTINGS.save();
         }
         if (!keepMessage) {
