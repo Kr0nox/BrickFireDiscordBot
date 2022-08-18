@@ -54,7 +54,7 @@ export class Day {
 }
 
 export function stringToDay(s : string) : Day {
-    let splits = s.split(new RegExp("\\.|:"), 3);
+    let splits = s.split(new RegExp("[.:]"), 3);
     if (splits.length < 2
         || +splits[0] < 1 || +splits[0] > 31
         || +splits[1] < 1 || +splits[1] > 12) {

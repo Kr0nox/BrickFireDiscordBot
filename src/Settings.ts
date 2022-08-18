@@ -2,11 +2,13 @@ import {readFileSync, writeFileSync} from "fs";
 
 export default class Settings {
     defaultMeetMention : string = ""
-    private path: string
+    privateMentionTime : number = 0;
+    private readonly path: string
 
     constructor(path:string) {
         let obj = JSON.parse(readFileSync(path).toString())
         this.defaultMeetMention = obj.defaultMeetMention;
+        this.privateMentionTime = obj.privateMentionTime;
         this.path = path;
     }
 

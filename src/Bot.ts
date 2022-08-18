@@ -3,7 +3,7 @@ import ready from "./listeners/ready";
 import interactionCreate from "./listeners/interactionCreate";
 import reactionAdd from "./listeners/reactionAdd";
 import {readFileSync} from "fs";
-import {readAppointments, manageAppointments} from "./appointments/appointmentManager";
+import {readAppointments} from "./appointments/appointmentManager";
 import Settings from "./Settings";
 import processEnd from "./listeners/processEnd";
 
@@ -33,10 +33,8 @@ processEnd(client)
 readAppointments();
 
 
-client.login(readFileSync("data/token.env").toString()).then(() => {
-    manageAppointments(client).then(() => setInterval(function (){manageAppointments(client)}, 360000))
-});
+client.login(readFileSync("data/token.env").toString());
 
 export default function printToConsole(s: any) : void {
-    console.log(new Date().toLocaleString() + " > "+ s)
+    console.log(new Date().toLocaleString('de-AT', {timeZone: 'Europe/Berlin'}) + " > "+ s)
 }
