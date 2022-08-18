@@ -151,6 +151,12 @@ export const Termin: Command =
                     name: "remove_reactions",
                     description: "Entfernt zu und absagen",
                     required: false
+                },
+                {
+                    type: ApplicationCommandOptionType.Boolean,
+                    name: "new_privat_erinnern",
+                    description: "@mention wird vor dem Termin nochmal privat gepingt, wenn sie nicht, reagiert haben",
+                    required: false
                 }
             ]
         }
@@ -182,7 +188,7 @@ export const Termin: Command =
                             description != null ? description : undefined,
                             repeat != null ? repeat : undefined,
                             interaction.channel.id,
-                            mentionPrivately != null ? !mentionPrivately:undefined
+                            mentionPrivately != null ? mentionPrivately:undefined
                         );
 
                         await addAppointment(a, interaction.channel);
@@ -218,6 +224,7 @@ export const Termin: Command =
             let newDescription = options.getString("new_description")
             let newRepeat = options.getBoolean("new:repeat")
             let removeReactions = options.getBoolean("remove_reactions")
+            let newMentionPrivately = options.getBoolean("new_privat_erinnern")
             if (interaction.channel != null) {
                 try {
                     await editAppointment(interaction.channel,
@@ -227,7 +234,8 @@ export const Termin: Command =
                         newStart != null ? stringToTime(newStart) : undefined,
                         newEnd != null ? stringToTime(newEnd): undefined,
                         newDescription != null ? newDescription:undefined,
-                        newRepeat != null ? newRepeat:undefined);
+                        newRepeat != null ? newRepeat:undefined,
+                        newMentionPrivately != null ? newMentionPrivately:undefined);
                 } catch (e) {
                     printToConsole(e)
                 }

@@ -15,10 +15,10 @@ export class Appointment {
     online : string[]
     channel : string;
     doPrivateMention: boolean;
-    mentionedPrivately : boolean;
+    mentionWasSend : boolean;
 
     constructor(mention:string, date:Day, start: Time, end? : Time,
-                description? : string, repeat? : boolean, channel?:string, mentionedPrivately?:boolean) {
+                description? : string, repeat? : boolean, channel?:string, mentionPrivately?:boolean) {
         this.mention = mention
         this.date = date;
         this.start = start;
@@ -29,8 +29,8 @@ export class Appointment {
         this.notThere = []
         this.online = []
         this.channel = channel != undefined? channel:"";
-        this.mentionedPrivately = mentionedPrivately != undefined ? mentionedPrivately : true;
-        this.doPrivateMention = this.mentionedPrivately;
+        this.doPrivateMention = mentionPrivately != undefined ? mentionPrivately : false;
+        this.mentionWasSend = false
     }
 
     toString(removeMention? : boolean) : string {
@@ -110,9 +110,9 @@ export function jsonToAppointment(json:string) : Appointment {
         obj.description,
         obj.repeat,
         obj.channel,
-        obj.mentionedPrivately
+        obj.doPrivateMention
     );
-    a.doPrivateMention = obj.doPrivateMention
+    a.mentionWasSend = obj.mentionWasSend
     for (let s of obj.there) {
         a.addThere(s.toString())
     }

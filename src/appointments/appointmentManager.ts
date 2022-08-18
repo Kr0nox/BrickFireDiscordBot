@@ -14,8 +14,6 @@ import {DEFAULT_SETTINGS} from "../Bot";
 let appointments : Appointment[] = [];
 const path = "data/appointments.json";
 
-
-
 export async function manageAppointments(client:Client) {
     let d = new Date();
     const day = new Day(d.getDate(), d.getMonth() + 1, d.getFullYear());
@@ -46,10 +44,10 @@ export async function manageAppointments(client:Client) {
                     }
                 }
         });}
-        else if (!a.mentionedPrivately
+        else if (a.doPrivateMention && !a.mentionWasSend
                 && new Date(a.date.year, a.date.month - 1, a.date.day, a.start.hour, a. start.minute).getTime()
                 - new Date().getTime() < DEFAULT_SETTINGS.privateMentionTime * 3600000
-                && guild != undefined && !a.mentionedPrivately && a.mention.charAt(0) == '<') {
+                && guild != undefined && a.mention.charAt(0) == '<') {
             // all reactions
             const reacted = a.there.concat(a.notThere, a.online);
             // all server members
@@ -78,7 +76,7 @@ export async function manageAppointments(client:Client) {
                     }
                 }
             }
-            a.mentionedPrivately = true;
+            a.mentionWasSend = true;
         }
     }
     saveAppointments()
@@ -141,7 +139,8 @@ export async function deleteAppointment(channel:TextBasedChannel, date:Day, star
 }
 
 export async function editAppointment(channel:TextBasedChannel, date:Day, removeReactions: boolean, oldStart? : Time,
-                                      newStart?:Time, newEnd?:Time, newDescription?:string, newRepeat?: boolean) {
+                                      newStart?:Time, newEnd?:Time, newDescription?:string, newRepeat?: boolean,
+                                      newMentionPrivat? : boolean) {
     // Check for only one appointment object
     let count = 0;
     let appointment : Appointment;
@@ -169,6 +168,9 @@ export async function editAppointment(channel:TextBasedChannel, date:Day, remove
             }
             if (newRepeat != undefined) {
                 appointment.repeat = newRepeat;
+            }
+            if (newMentionPrivat != undefined) {
+                appointment.doPrivateMention = newMentionPrivat
             }
             messages[0].edit({content: appointment.toString()});
 
