@@ -5,7 +5,7 @@ import {
     Client,
     APIInteractionGuildMember, GuildMember,
     ButtonInteraction, ButtonStyle,
-    Message, TextBasedChannel
+    Message, TextBasedChannel, Interaction, User, MessageReaction, PartialUser
 } from "discord.js";
 import {Time} from "./Time";
 import NullAppointment from "./NullAppointment";
@@ -191,24 +191,48 @@ export async function buttonClick(interaction : ButtonInteraction) : Promise<voi
     ]);
     const intID = interaction.customId
 
+
     await interaction.reply({ephemeral: true, content: replyMap.get(intID)})
 
-    let a = findAppointmentByMessage(interaction.message)
-    if (interaction.member != null || interaction.user != null) {
-        // @ts-ignore
-        const name: string = getName(interaction.member != null ? interaction.member:interaction.user);
-        if (intID == "there") {
-            a.addThere(name)
-        } else if (intID == "notThere") {
-            a.addNotThere(name)
-        } else if (intID == "discord") {
-            a.addOnline(name)
-        }
-        await interaction.message.edit({embeds: [a.getEmbed()]})
+    if (interaction.member != null) {
+        await setStatus(intID, getName(interaction.member), interaction.message)
     }
+}
+
+export async function reacted(reaction : MessageReaction, user : GuildMember) {
+    const emojiMap = new Map<string, string>([
+        ["anwesend", "there"],
+        ["abwesend", "notThere"],
+        ["discord", "discord"]
+    ]);
+
+    const status = emojiMap.get(reaction.emoji.name != null ? reaction.emoji.name : "")
+    if (status != undefined) {
+        let message;
+        if (reaction.message.partial) {
+            await reaction.message.fetch().then(m => setStatus(status, !user.partial ? getName(user) :"", m))
+        } else {
+            await setStatus(status, !user.partial ? getName(user) :"", reaction.message)
+        }
+    }
+}
+
+async function setStatus(status:string, name:string, message:Message) {
+    let a = findAppointmentByMessage(message)
+
+    if (status == "there") {
+        a.addThere(name)
+    } else if (status == "notThere") {
+        a.addNotThere(name)
+    } else if (status == "discord") {
+        a.addOnline(name)
+    }
+
+    await message.edit({embeds: [a.getEmbed()]})
 
     saveAppointments();
 }
+
 
 export function readAppointments() {
     appointments = []
