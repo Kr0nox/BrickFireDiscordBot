@@ -8,7 +8,12 @@ export class Day {
         this.day = day;
         this.month = month;
         // ugly quick fix
-        this.year = year > 2000 ? year:2022;
+        const now = new Date();
+        if (month < now.getMonth()) {
+            this.year = now.getFullYear() + 1;
+        } else {
+            this.year = now.getFullYear();
+        }
     }
 
 

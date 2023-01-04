@@ -3,9 +3,20 @@ import {readFileSync, writeFileSync} from "fs";
 import {Day} from "./Day";
 import {
     Client,
-    APIInteractionGuildMember, GuildMember,
-    ButtonInteraction, ButtonStyle,
-    Message, TextBasedChannel, Interaction, User, MessageReaction, PartialUser
+    APIInteractionGuildMember,
+    GuildMember,
+    ButtonInteraction,
+    ButtonStyle,
+    Message,
+    TextBasedChannel,
+    Interaction,
+    User,
+    MessageReaction,
+    PartialUser,
+    Emoji,
+    ActionRow,
+    ActionRowBuilder,
+    ButtonBuilder
 } from "discord.js";
 import {Time} from "./Time";
 import NullAppointment from "./NullAppointment";
@@ -13,6 +24,10 @@ import {DEFAULT_SETTINGS} from "../Bot";
 
 let appointments : Appointment[] = [];
 const path = "data/appointments.json";
+let thereEmoji : Emoji;
+let notThereEmoji;
+let onlineEmoji;
+let unsureEmoji;
 
 export async function manageAppointments(client:Client) {
     let d = new Date();
@@ -80,12 +95,13 @@ export async function manageAppointments(client:Client) {
         }
     }
     saveAppointments()
+    getEmojis(client)
 }
 
 export async function addAppointment(a:Appointment, c:TextBasedChannel) {
     appointments.push(a)
     saveAppointments()
-
+    const thereLabel = thereEmoji.toString()
     c.send({content:a.toString(), components:[
             {
                 type: 1,
@@ -107,7 +123,13 @@ export async function addAppointment(a:Appointment, c:TextBasedChannel) {
                         label: 'Ich bin ONLINE da',
                         style: ButtonStyle.Primary,
                         custom_id: 'discord'
-                    }
+                    }/*,
+                    {
+                        type: 2,
+                        label: 'Unsicher',
+                        style: ButtonStyle.Secondary,
+                        custom_id: 'unsure',
+                    }*/
                 ]
             }
         ]});
@@ -187,7 +209,8 @@ export async function buttonClick(interaction : ButtonInteraction) : Promise<voi
     const replyMap = new Map<string, string>([
         ["there", "Du hast zugesagt"],
         ["notThere", "Du hast abgesagt"],
-        ["discord", "Du bist über Discord dabei"]
+        ["discord", "Du bist über Discord dabei"],
+        ["unsure", "Du bist dir unsicher"]
     ]);
     const intID = interaction.customId
 
@@ -291,4 +314,13 @@ function findAppointmentByMessage(m : Message) : Appointment {
 function getName(user: GuildMember | APIInteractionGuildMember) : string {
     // @ts-ignore
     return user.nickname.split(" | ")[0];
+}
+
+function getEmojis(client : Client) {
+    const emojis = client.emojis.cache.values();
+    for (let emoji of emojis) {
+        if (emoji.name == "Quad") {
+            thereEmoji = emoji;
+        }
+    }
 }
